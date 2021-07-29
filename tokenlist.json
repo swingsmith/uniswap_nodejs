@@ -1,0 +1,49 @@
+{
+  "name": "OAT Token List",
+  "logoURI": "ipfs://QmUSNbwUxUYNMvMksKypkgWs8unSm8dX2GjCPBVGZ7GGMr",
+  "keywords": [
+    "audited",
+    "verified",
+    "special tokens"
+  ],
+  "tags": {
+    "stablecoin": {
+      "name": "Stablecoin",
+      "description": "Tokens that are fixed to an external asset, e.g. the US dollar"
+    },
+    "compound": {
+      "name": "Compound Finance",
+      "description": "Tokens that earn interest on compound.finance"
+    }
+  },
+  "timestamp": "2020-06-12T00:00:00+00:00",
+  "tokens": [
+    {
+      "chainId": 88,
+      "address": "0x4BAf4Fb4Ce33497f528bE2eFe13FA8EAA59720bE",
+      "symbol": "LEAVE",
+      "name": "Office Leave Coin",
+      "decimals": 18,
+      "logoURI": "ipfs://QmXfzKRvjZz3u5JRgC4v5mGVbm9ahrUiB4DgzHBsnWbTMM",
+      "tags": [
+        "stablecoin"
+      ]
+    },
+    {
+      "chainId": 88,
+      "address": "0x59C2a7e2Db9d45Ee8B0285224691074A9cD85fAa",
+      "symbol": "CARD",
+      "name": "Office Card Coin",
+      "decimals": 18,
+      "logoURI": "ipfs://QmUSNbwUxUYNMvMksKypkgWs8unSm8dX2GjCPBVGZ7GGMr",
+      "tags": [
+        "compound"
+      ]
+    }
+  ],
+  "version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  }
+}
