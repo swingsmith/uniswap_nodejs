@@ -1,7 +1,7 @@
 let Common= require('ethereumjs-common').default;
 let Tx = require('ethereumjs-tx').Transaction;
 
-let web3js = require('../utils/myUtils').getWeb3();
+let web3 = require('../utils/myUtils').getWeb3();
 let BigNumber = require('bignumber.js');
 let fs = require("fs");
 const axios = require('axios');
@@ -24,12 +24,12 @@ let erc20Abi = JSON.parse(fs.readFileSync('abi/erc20.abi'));
 // console.log('end')
 let wethAddr = '0x5bdd4101020EE226332C647Ac9CdD88fAFB496DE';
 let routerContractAddr = "0x11210C16D924A05319599a08a61606ce1F679ec9";
-let routerContract = new web3js.eth.Contract(routerAbi, routerContractAddr);
+let routerContract = new web3.eth.Contract(routerAbi, routerContractAddr);
 // tokenContract.defaultCommon = {customChain: {name: 'oatnet', chainId: 88, networkId: 88}, baseChain: 'mainnet', hardfork: 'petersburg'};
 // console.log(routerContract);
 
 async function getAccountBalance(address){
-    let myBalance = await web3js.eth.getBalance(address);
+    let myBalance = await web3.eth.getBalance(address);
 
     console.log('balance:'+myBalance.toString())
     return myBalance;
@@ -38,15 +38,15 @@ async function getAccountBalance(address){
 async function sendETH(from,to,amount,privateKey){
     var prvKey = new Buffer.from(privateKey, 'hex');
 
-    let nonce = await web3js.eth.getTransactionCount(from);
+    let nonce = await web3.eth.getTransactionCount(from);
     console.log('nonce:'+nonce)
-    let gasPrice = await web3js.eth.getGasPrice();
+    let gasPrice = await web3.eth.getGasPrice();
     console.log('gasprice:'+gasPrice)
     //let decimals = await routerContract.methods.decimals().call();
     // let balance = number * Math.pow(10, decimals);
     let balance = 50;
 
-    let myBalance = await web3js.eth.getBalance(from);
+    let myBalance = await web3.eth.getBalance(from);
     console.log('mybalance:'+myBalance);
     //let myBalance = routerContract.methods.balanceOf(fromaddress).call();
     // if (myBalance < balance) {
@@ -56,13 +56,13 @@ async function sendETH(from,to,amount,privateKey){
     // let tokenData = await routerContract.methods.bid(balance).encodeABI();
 
     var rawTx = {
-        nonce: web3js.utils.numberToHex(nonce),
-        gasPrice: web3js.utils.numberToHex(gasPrice),
+        nonce: web3.utils.numberToHex(nonce),
+        gasPrice: web3.utils.numberToHex(gasPrice),
         gasLimit: '0x52080',
         to: to,
         from: from,
         // chainID: web3.utils.numberToHex(3),
-        value: web3js.utils.numberToHex(amount),
+        value: web3.utils.numberToHex(amount),
         data: '0xabc'//转ｔｏｋｅｎ会用到的一个字段
     };
     // console.log(web3.utils.isHexStrict(web3.utils.numberToHex(nonce)))
@@ -71,14 +71,14 @@ async function sendETH(from,to,amount,privateKey){
     // rawTx.gas = gas;
     // console.log(gas)
 
-    console.log(await web3js.eth.net.getId());
+    console.log(await web3.eth.net.getId());
     var tx = new Tx(rawTx,{ common: customCommon });//{chain:'ropsten', hardfork: 'petersburg'}
     tx.sign(prvKey);
     var serializedTx = tx.serialize();
 
     // console.log(serializedTx.toString('hex'));
     // 0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ca08a8bbf888cfa37bbf0bb965423625641fc956967b81d12e23709cead01446075a01ce999b56a8a88504be365442ea61239198e23d1fce7d00fcfc5cd3b44b7215f
-    let data =  await web3js.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function(err, data) {
+    let data =  await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function(err, data) {
         console.log(err);
         // console.log(data);
     })
@@ -103,9 +103,9 @@ async function transfer(from,to,amount,privateKey){
     // let toaddress = ""
     var prvKey = new Buffer.from(privateKey, 'hex');
 
-    let nonce = await web3js.eth.getTransactionCount(from);
+    let nonce = await web3.eth.getTransactionCount(from);
     console.log('nonce:'+nonce);
-    let gasPrice = await web3js.eth.getGasPrice();
+    let gasPrice = await web3.eth.getGasPrice();
     //let decimals = await routerContract.methods.decimals().call();
    // let balance = number * Math.pow(10, decimals);
     let balance = 50;
@@ -119,12 +119,12 @@ async function transfer(from,to,amount,privateKey){
     let tokenData = await routerContract.methods.transfer(to,amount).encodeABI();
 
     var rawTx = {
-        nonce: web3js.utils.numberToHex(nonce),
-        gasPrice: web3js.utils.numberToHex(gasPrice),
+        nonce: web3.utils.numberToHex(nonce),
+        gasPrice: web3.utils.numberToHex(gasPrice),
         gasLimit: '0x52080',
         to: routerContractAddress,
         from: from,
-        value: web3js.utils.numberToHex(0),
+        value: web3.utils.numberToHex(0),
         data: tokenData//转ｔｏｋｅｎ会用到的一个字段
     };
     //需要将交易的数据进行预估ｇａｓ计算，然后将ｇａｓ值设置到数据参数中
@@ -138,7 +138,7 @@ async function transfer(from,to,amount,privateKey){
 
     // console.log(serializedTx.toString('hex'));
     // 0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ca08a8bbf888cfa37bbf0bb965423625641fc956967b81d12e23709cead01446075a01ce999b56a8a88504be365442ea61239198e23d1fce7d00fcfc5cd3b44b7215f
-   let data =  await web3js.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function(err, hash) {
+   let data =  await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function(err, hash) {
         console.log(err);
         console.log('hash:'+hash);
 
@@ -149,7 +149,7 @@ async function transfer(from,to,amount,privateKey){
 }
 
 async function getTransactionReceipt(txHash){
-    let receipt = await web3js.eth.getTransactionReceipt(txHash)
+    let receipt = await web3.eth.getTransactionReceipt(txHash)
         // .then(console.log);
 
     console.log(receipt)
@@ -159,7 +159,7 @@ async function getTransactionReceipt(txHash){
 }
 //token decimals
 async function getTokenDecimals(tokenAddress) {
-    var token = new web3js.eth.Contract(erc20Abi, tokenAddress);
+    var token = new web3.eth.Contract(erc20Abi, tokenAddress);
     var decimals = await token.methods.decimals().call();
     return decimals
 }
@@ -190,21 +190,21 @@ async function quote(amountADesired, reserveA, reserveB) {
 
 async function approveTokenForTokens(token, amount, privateKey) {
     let prvKey = new Buffer.from(privateKey, 'hex');
-    let from = await web3js.eth.accounts.privateKeyToAccount(privateKey).address.toString();
-    let nonce = await web3js.eth.getTransactionCount(from);
+    let from = await web3.eth.accounts.privateKeyToAccount(privateKey).address.toString();
+    let nonce = await web3.eth.getTransactionCount(from);
     console.log('nonce:' + nonce);
-    let gasPrice = await web3js.eth.getGasPrice();
+    let gasPrice = await web3.eth.getGasPrice();
 
-    let token0 = new web3js.eth.Contract(erc20Abi,token);
+    let token0 = new web3.eth.Contract(erc20Abi,token);
     let tokenData = await token0.methods.approve(routerContractAddr, amount).encodeABI();
 
     var rawTx = {
-        nonce: web3js.utils.numberToHex(nonce),
-        gasPrice: web3js.utils.numberToHex(gasPrice),
-        gasLimit: web3js.utils.numberToHex(60000),
+        nonce: web3.utils.numberToHex(nonce),
+        gasPrice: web3.utils.numberToHex(gasPrice),
+        gasLimit: web3.utils.numberToHex(60000),
         to: token,
         from: from,
-        value: web3js.utils.numberToHex(0),
+        value: web3.utils.numberToHex(0),
         data: tokenData//转ｔｏｋｅｎ会用到的一个字段
     };
     //需要将交易的数据进行预估ｇａｓ计算，然后将ｇａｓ值设置到数据参数中
@@ -218,7 +218,7 @@ async function approveTokenForTokens(token, amount, privateKey) {
 
     // console.log(serializedTx.toString('hex'));
     // 0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ca08a8bbf888cfa37bbf0bb965423625641fc956967b81d12e23709cead01446075a01ce999b56a8a88504be365442ea61239198e23d1fce7d00fcfc5cd3b44b7215f
-    let data = await web3js.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+    let data = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
         console.log(err);
         console.log('hash:' + hash);
 
@@ -228,21 +228,21 @@ async function approveTokenForTokens(token, amount, privateKey) {
 
 async function approvePair(pairAddr, amount, privateKey) {
     let prvKey = new Buffer.from(privateKey, 'hex');
-    let from = await web3js.eth.accounts.privateKeyToAccount(privateKey).address.toString();
-    let nonce = await web3js.eth.getTransactionCount(from);
+    let from = await web3.eth.accounts.privateKeyToAccount(privateKey).address.toString();
+    let nonce = await web3.eth.getTransactionCount(from);
     console.log('nonce:' + nonce);
-    let gasPrice = await web3js.eth.getGasPrice();
+    let gasPrice = await web3.eth.getGasPrice();
 
-    var pair = new web3js.eth.Contract(pairAbi, pairAddr);
+    var pair = new web3.eth.Contract(pairAbi, pairAddr);
     let tokenData = await pair.methods.approve(routerContractAddr, amount).encodeABI();
 
     var rawTx = {
-        nonce: web3js.utils.numberToHex(nonce),
-        gasPrice: web3js.utils.numberToHex(gasPrice),
-        gasLimit: web3js.utils.numberToHex(60000),
+        nonce: web3.utils.numberToHex(nonce),
+        gasPrice: web3.utils.numberToHex(gasPrice),
+        gasLimit: web3.utils.numberToHex(60000),
         to: pairAddr,
         from: from,
-        value: web3js.utils.numberToHex(0),
+        value: web3.utils.numberToHex(0),
         data: tokenData//转ｔｏｋｅｎ会用到的一个字段
     };
     //需要将交易的数据进行预估ｇａｓ计算，然后将ｇａｓ值设置到数据参数中
@@ -256,7 +256,7 @@ async function approvePair(pairAddr, amount, privateKey) {
 
     // console.log(serializedTx.toString('hex'));
     // 0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ca08a8bbf888cfa37bbf0bb965423625641fc956967b81d12e23709cead01446075a01ce999b56a8a88504be365442ea61239198e23d1fce7d00fcfc5cd3b44b7215f
-    let data = await web3js.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+    let data = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
         console.log(err);
         console.log('hash:' + hash);
 
@@ -269,10 +269,10 @@ async function addLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amou
     console.log(deadline)
 
     let prvKey = new Buffer.from(privateKey, 'hex');
-    let from = await web3js.eth.accounts.privateKeyToAccount(privateKey).address.toString();
-    let nonce = await web3js.eth.getTransactionCount(from);
+    let from = await web3.eth.accounts.privateKeyToAccount(privateKey).address.toString();
+    let nonce = await web3.eth.getTransactionCount(from);
     console.log('nonce:' + nonce);
-    let gasPrice = await web3js.eth.getGasPrice();
+    let gasPrice = await web3.eth.getGasPrice();
 
     let tokenData = await routerContract.methods.addLiquidity(
         tokenA,
@@ -286,12 +286,12 @@ async function addLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amou
     ).encodeABI();
 
     var rawTx = {
-        nonce: web3js.utils.numberToHex(nonce),
-        gasPrice: web3js.utils.numberToHex(gasPrice),
-        gasLimit: web3js.utils.numberToHex(3500000),
+        nonce: web3.utils.numberToHex(nonce),
+        gasPrice: web3.utils.numberToHex(gasPrice),
+        gasLimit: web3.utils.numberToHex(3500000),
         to: routerContractAddr,
         from: from,
-        value: web3js.utils.numberToHex(0),
+        value: web3.utils.numberToHex(0),
         data: tokenData//转ｔｏｋｅｎ会用到的一个字段
     };
     //需要将交易的数据进行预估ｇａｓ计算，然后将ｇａｓ值设置到数据参数中
@@ -305,7 +305,7 @@ async function addLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amou
 
     // console.log(serializedTx.toString('hex'));
     // 0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ca08a8bbf888cfa37bbf0bb965423625641fc956967b81d12e23709cead01446075a01ce999b56a8a88504be365442ea61239198e23d1fce7d00fcfc5cd3b44b7215f
-    let data = await web3js.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+    let data = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
         console.log(err);
         console.log('hash:' + hash);
 
@@ -318,10 +318,10 @@ async function addLiquidityETH(token, amountTokenDesired, amountETHDesired, amou
     console.log(deadline)
 
     let prvKey = new Buffer.from(privateKey, 'hex');
-    let from = await web3js.eth.accounts.privateKeyToAccount(privateKey).address.toString();
-    let nonce = await web3js.eth.getTransactionCount(from);
+    let from = await web3.eth.accounts.privateKeyToAccount(privateKey).address.toString();
+    let nonce = await web3.eth.getTransactionCount(from);
     console.log('nonce:' + nonce);
-    let gasPrice = await web3js.eth.getGasPrice();
+    let gasPrice = await web3.eth.getGasPrice();
 
     let tokenData = await routerContract.methods.addLiquidityETH(
         token,
@@ -333,12 +333,12 @@ async function addLiquidityETH(token, amountTokenDesired, amountETHDesired, amou
     ).encodeABI();
 
     var rawTx = {
-        nonce: web3js.utils.numberToHex(nonce),
-        gasPrice: web3js.utils.numberToHex(gasPrice),
-        gasLimit: web3js.utils.numberToHex(3500000),
+        nonce: web3.utils.numberToHex(nonce),
+        gasPrice: web3.utils.numberToHex(gasPrice),
+        gasLimit: web3.utils.numberToHex(3500000),
         to: routerContractAddr,
         from: from,
-        value: web3js.utils.numberToHex(amountETHDesired),
+        value: web3.utils.numberToHex(amountETHDesired),
         data: tokenData//转ｔｏｋｅｎ会用到的一个字段
     };
     //需要将交易的数据进行预估ｇａｓ计算，然后将ｇａｓ值设置到数据参数中
@@ -352,7 +352,7 @@ async function addLiquidityETH(token, amountTokenDesired, amountETHDesired, amou
 
     // console.log(serializedTx.toString('hex'));
     // 0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ca08a8bbf888cfa37bbf0bb965423625641fc956967b81d12e23709cead01446075a01ce999b56a8a88504be365442ea61239198e23d1fce7d00fcfc5cd3b44b7215f
-    let data = await web3js.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+    let data = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
         console.log(err);
         console.log('hash:' + hash);
 
@@ -365,10 +365,10 @@ async function swapExactTokensForTokens(amountIn, amountOutMin, path, to, timeou
     console.log(deadline)
 
     let prvKey = new Buffer.from(privateKey, 'hex');
-    let from = await web3js.eth.accounts.privateKeyToAccount(privateKey).address.toString();
-    let nonce = await web3js.eth.getTransactionCount(from);
+    let from = await web3.eth.accounts.privateKeyToAccount(privateKey).address.toString();
+    let nonce = await web3.eth.getTransactionCount(from);
     console.log('nonce:' + nonce);
-    let gasPrice = await web3js.eth.getGasPrice();
+    let gasPrice = await web3.eth.getGasPrice();
 
     let tokenData = await routerContract.methods.swapExactTokensForTokens(
         amountIn,
@@ -379,12 +379,12 @@ async function swapExactTokensForTokens(amountIn, amountOutMin, path, to, timeou
     ).encodeABI();
 
     var rawTx = {
-        nonce: web3js.utils.numberToHex(nonce),
-        gasPrice: web3js.utils.numberToHex(gasPrice),
-        gasLimit: web3js.utils.numberToHex(200000),
+        nonce: web3.utils.numberToHex(nonce),
+        gasPrice: web3.utils.numberToHex(gasPrice),
+        gasLimit: web3.utils.numberToHex(200000),
         to: routerContractAddr,
         from: from,
-        value: web3js.utils.numberToHex(0),
+        value: web3.utils.numberToHex(0),
         data: tokenData//转ｔｏｋｅｎ会用到的一个字段
     };
     //需要将交易的数据进行预估ｇａｓ计算，然后将ｇａｓ值设置到数据参数中
@@ -398,7 +398,7 @@ async function swapExactTokensForTokens(amountIn, amountOutMin, path, to, timeou
 
     // console.log(serializedTx.toString('hex'));
     // 0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ca08a8bbf888cfa37bbf0bb965423625641fc956967b81d12e23709cead01446075a01ce999b56a8a88504be365442ea61239198e23d1fce7d00fcfc5cd3b44b7215f
-    let data = await web3js.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+    let data = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
         console.log(err);
         console.log('hash:' + hash);
 
@@ -411,10 +411,10 @@ async function swapTokensForExactTokens(amountOut, amountInMax, path, to, timeou
     console.log(deadline)
 
     let prvKey = new Buffer.from(privateKey, 'hex');
-    let from = await web3js.eth.accounts.privateKeyToAccount(privateKey).address.toString();
-    let nonce = await web3js.eth.getTransactionCount(from);
+    let from = await web3.eth.accounts.privateKeyToAccount(privateKey).address.toString();
+    let nonce = await web3.eth.getTransactionCount(from);
     console.log('nonce:' + nonce);
-    let gasPrice = await web3js.eth.getGasPrice();
+    let gasPrice = await web3.eth.getGasPrice();
 
     let tokenData = await routerContract.methods.swapTokensForExactTokens(
         amountOut,
@@ -425,12 +425,12 @@ async function swapTokensForExactTokens(amountOut, amountInMax, path, to, timeou
     ).encodeABI();
 
     let rawTx = {
-        nonce: web3js.utils.numberToHex(nonce),
-        gasPrice: web3js.utils.numberToHex(gasPrice),
-        gasLimit: web3js.utils.numberToHex(200000),
+        nonce: web3.utils.numberToHex(nonce),
+        gasPrice: web3.utils.numberToHex(gasPrice),
+        gasLimit: web3.utils.numberToHex(200000),
         to: routerContractAddr,
         from: from,
-        value: web3js.utils.numberToHex(0),
+        value: web3.utils.numberToHex(0),
         data: tokenData//转ｔｏｋｅｎ会用到的一个字段
     };
     //需要将交易的数据进行预估ｇａｓ计算，然后将ｇａｓ值设置到数据参数中
@@ -444,7 +444,7 @@ async function swapTokensForExactTokens(amountOut, amountInMax, path, to, timeou
 
     // console.log(serializedTx.toString('hex'));
     // 0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ca08a8bbf888cfa37bbf0bb965423625641fc956967b81d12e23709cead01446075a01ce999b56a8a88504be365442ea61239198e23d1fce7d00fcfc5cd3b44b7215f
-    let data = await web3js.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+    let data = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
         console.log(err);
         console.log('hash:' + hash);
 
@@ -457,10 +457,10 @@ async function swapTokensForExactETH(amountOut, amountInMax, path, to, timeout, 
     console.log(deadline)
 
     let prvKey = new Buffer.from(privateKey, 'hex');
-    let from = await web3js.eth.accounts.privateKeyToAccount(privateKey).address.toString();
-    let nonce = await web3js.eth.getTransactionCount(from);
+    let from = await web3.eth.accounts.privateKeyToAccount(privateKey).address.toString();
+    let nonce = await web3.eth.getTransactionCount(from);
     console.log('nonce:' + nonce);
-    let gasPrice = await web3js.eth.getGasPrice();
+    let gasPrice = await web3.eth.getGasPrice();
 
     let tokenData = await routerContract.methods.swapTokensForExactETH(
         amountOut,
@@ -471,12 +471,12 @@ async function swapTokensForExactETH(amountOut, amountInMax, path, to, timeout, 
     ).encodeABI();
 
     var rawTx = {
-        nonce: web3js.utils.numberToHex(nonce),
-        gasPrice: web3js.utils.numberToHex(gasPrice),
-        gasLimit: web3js.utils.numberToHex(200000),
+        nonce: web3.utils.numberToHex(nonce),
+        gasPrice: web3.utils.numberToHex(gasPrice),
+        gasLimit: web3.utils.numberToHex(200000),
         to: routerContractAddr,
         from: from,
-        value: web3js.utils.numberToHex(0),
+        value: web3.utils.numberToHex(0),
         data: tokenData//转ｔｏｋｅｎ会用到的一个字段
     };
     //需要将交易的数据进行预估ｇａｓ计算，然后将ｇａｓ值设置到数据参数中
@@ -490,7 +490,7 @@ async function swapTokensForExactETH(amountOut, amountInMax, path, to, timeout, 
 
     // console.log(serializedTx.toString('hex'));
     // 0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ca08a8bbf888cfa37bbf0bb965423625641fc956967b81d12e23709cead01446075a01ce999b56a8a88504be365442ea61239198e23d1fce7d00fcfc5cd3b44b7215f
-    let data = await web3js.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+    let data = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
         console.log(err);
         console.log('hash:' + hash);
 
@@ -503,10 +503,10 @@ async function swapExactTokensForETH(amountIn, amountOutMin, path, to, timeout, 
     console.log(deadline)
 
     let prvKey = new Buffer.from(privateKey, 'hex');
-    let from = await web3js.eth.accounts.privateKeyToAccount(privateKey).address.toString();
-    let nonce = await web3js.eth.getTransactionCount(from);
+    let from = await web3.eth.accounts.privateKeyToAccount(privateKey).address.toString();
+    let nonce = await web3.eth.getTransactionCount(from);
     console.log('nonce:' + nonce);
-    let gasPrice = await web3js.eth.getGasPrice();
+    let gasPrice = await web3.eth.getGasPrice();
 
     let tokenData = await routerContract.methods.swapExactTokensForETH(
         amountIn,
@@ -517,12 +517,12 @@ async function swapExactTokensForETH(amountIn, amountOutMin, path, to, timeout, 
     ).encodeABI();
 
     var rawTx = {
-        nonce: web3js.utils.numberToHex(nonce),
-        gasPrice: web3js.utils.numberToHex(gasPrice),
-        gasLimit: web3js.utils.numberToHex(200000),
+        nonce: web3.utils.numberToHex(nonce),
+        gasPrice: web3.utils.numberToHex(gasPrice),
+        gasLimit: web3.utils.numberToHex(200000),
         to: routerContractAddr,
         from: from,
-        value: web3js.utils.numberToHex(0),
+        value: web3.utils.numberToHex(0),
         data: tokenData//转ｔｏｋｅｎ会用到的一个字段
     };
     //需要将交易的数据进行预估ｇａｓ计算，然后将ｇａｓ值设置到数据参数中
@@ -536,7 +536,7 @@ async function swapExactTokensForETH(amountIn, amountOutMin, path, to, timeout, 
 
     // console.log(serializedTx.toString('hex'));
     // 0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ca08a8bbf888cfa37bbf0bb965423625641fc956967b81d12e23709cead01446075a01ce999b56a8a88504be365442ea61239198e23d1fce7d00fcfc5cd3b44b7215f
-    let data = await web3js.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+    let data = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
         console.log(err);
         console.log('hash:' + hash);
 
@@ -549,10 +549,10 @@ async function swapExactETHForTokens(amountIn, amountOutMin, path, to, timeout, 
     console.log(deadline)
 
     let prvKey = new Buffer.from(privateKey, 'hex');
-    let from = await web3js.eth.accounts.privateKeyToAccount(privateKey).address.toString();
-    let nonce = await web3js.eth.getTransactionCount(from);
+    let from = await web3.eth.accounts.privateKeyToAccount(privateKey).address.toString();
+    let nonce = await web3.eth.getTransactionCount(from);
     console.log('nonce:' + nonce);
-    let gasPrice = await web3js.eth.getGasPrice();
+    let gasPrice = await web3.eth.getGasPrice();
 
     let tokenData = await routerContract.methods.swapExactETHForTokens(
         amountOutMin,
@@ -562,12 +562,12 @@ async function swapExactETHForTokens(amountIn, amountOutMin, path, to, timeout, 
     ).encodeABI();
 
     var rawTx = {
-        nonce: web3js.utils.numberToHex(nonce),
-        gasPrice: web3js.utils.numberToHex(gasPrice),
-        gasLimit: web3js.utils.numberToHex(200000),
+        nonce: web3.utils.numberToHex(nonce),
+        gasPrice: web3.utils.numberToHex(gasPrice),
+        gasLimit: web3.utils.numberToHex(200000),
         to: routerContractAddr,
         from: from,
-        value: web3js.utils.numberToHex(amountIn),
+        value: web3.utils.numberToHex(amountIn),
         data: tokenData//转ｔｏｋｅｎ会用到的一个字段
     };
     //需要将交易的数据进行预估ｇａｓ计算，然后将ｇａｓ值设置到数据参数中
@@ -581,7 +581,7 @@ async function swapExactETHForTokens(amountIn, amountOutMin, path, to, timeout, 
 
     // console.log(serializedTx.toString('hex'));
     // 0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ca08a8bbf888cfa37bbf0bb965423625641fc956967b81d12e23709cead01446075a01ce999b56a8a88504be365442ea61239198e23d1fce7d00fcfc5cd3b44b7215f
-    let data = await web3js.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+    let data = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
         console.log(err);
         console.log('hash:' + hash);
 
@@ -594,10 +594,10 @@ async function swapETHForExactTokens(amountIn, amountOut, path, to, timeout, pri
     console.log(deadline)
 
     let prvKey = new Buffer.from(privateKey, 'hex');
-    let from = await web3js.eth.accounts.privateKeyToAccount(privateKey).address.toString();
-    let nonce = await web3js.eth.getTransactionCount(from);
+    let from = await web3.eth.accounts.privateKeyToAccount(privateKey).address.toString();
+    let nonce = await web3.eth.getTransactionCount(from);
     console.log('nonce:' + nonce);
-    let gasPrice = await web3js.eth.getGasPrice();
+    let gasPrice = await web3.eth.getGasPrice();
 
     let tokenData = await routerContract.methods.swapETHForExactTokens(
         amountOut,
@@ -607,12 +607,12 @@ async function swapETHForExactTokens(amountIn, amountOut, path, to, timeout, pri
     ).encodeABI();
 
     var rawTx = {
-        nonce: web3js.utils.numberToHex(nonce),
-        gasPrice: web3js.utils.numberToHex(gasPrice),
-        gasLimit: web3js.utils.numberToHex(200000),
+        nonce: web3.utils.numberToHex(nonce),
+        gasPrice: web3.utils.numberToHex(gasPrice),
+        gasLimit: web3.utils.numberToHex(200000),
         to: routerContractAddr,
         from: from,
-        value: web3js.utils.numberToHex(amountIn),
+        value: web3.utils.numberToHex(amountIn),
         data: tokenData//转ｔｏｋｅｎ会用到的一个字段
     };
     //需要将交易的数据进行预估ｇａｓ计算，然后将ｇａｓ值设置到数据参数中
@@ -626,7 +626,7 @@ async function swapETHForExactTokens(amountIn, amountOut, path, to, timeout, pri
 
     // console.log(serializedTx.toString('hex'));
     // 0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ca08a8bbf888cfa37bbf0bb965423625641fc956967b81d12e23709cead01446075a01ce999b56a8a88504be365442ea61239198e23d1fce7d00fcfc5cd3b44b7215f
-    let data = await web3js.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+    let data = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
         console.log(err);
         console.log('hash:' + hash);
 
@@ -640,10 +640,10 @@ async function removeLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin
     console.log(deadline)
 
     let prvKey = new Buffer.from(privateKey, 'hex');
-    let from = await web3js.eth.accounts.privateKeyToAccount(privateKey).address.toString();
-    let nonce = await web3js.eth.getTransactionCount(from);
+    let from = await web3.eth.accounts.privateKeyToAccount(privateKey).address.toString();
+    let nonce = await web3.eth.getTransactionCount(from);
     console.log('nonce:' + nonce);
-    let gasPrice = await web3js.eth.getGasPrice();
+    let gasPrice = await web3.eth.getGasPrice();
 
     let tokenData = await routerContract.methods.removeLiquidity(
         tokenA,
@@ -656,12 +656,12 @@ async function removeLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin
     ).encodeABI();
 
     let rawTx = {
-        nonce: web3js.utils.numberToHex(nonce),
-        gasPrice: web3js.utils.numberToHex(gasPrice),
-        gasLimit: web3js.utils.numberToHex(3500000),
+        nonce: web3.utils.numberToHex(nonce),
+        gasPrice: web3.utils.numberToHex(gasPrice),
+        gasLimit: web3.utils.numberToHex(3500000),
         to: routerContractAddr,
         from: from,
-        value: web3js.utils.numberToHex(0),
+        value: web3.utils.numberToHex(0),
         data: tokenData//转ｔｏｋｅｎ会用到的一个字段
     };
     //需要将交易的数据进行预估ｇａｓ计算，然后将ｇａｓ值设置到数据参数中
@@ -675,7 +675,7 @@ async function removeLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin
 
     // console.log(serializedTx.toString('hex'));
     // 0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ca08a8bbf888cfa37bbf0bb965423625641fc956967b81d12e23709cead01446075a01ce999b56a8a88504be365442ea61239198e23d1fce7d00fcfc5cd3b44b7215f
-    let data = await web3js.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+    let data = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
         console.log(err);
         console.log('hash:' + hash);
 
@@ -688,10 +688,10 @@ async function removeLiquidityETH(token, liquidity, amountTokenMin, amountETHMin
     console.log(deadline)
 
     let prvKey = new Buffer.from(privateKey, 'hex');
-    let from = await web3js.eth.accounts.privateKeyToAccount(privateKey).address.toString();
-    let nonce = await web3js.eth.getTransactionCount(from);
+    let from = await web3.eth.accounts.privateKeyToAccount(privateKey).address.toString();
+    let nonce = await web3.eth.getTransactionCount(from);
     console.log('nonce:' + nonce);
-    let gasPrice = await web3js.eth.getGasPrice();
+    let gasPrice = await web3.eth.getGasPrice();
 
     let tokenData = await routerContract.methods.removeLiquidityETH(
         token,
@@ -703,12 +703,12 @@ async function removeLiquidityETH(token, liquidity, amountTokenMin, amountETHMin
     ).encodeABI();
 
     let rawTx = {
-        nonce: web3js.utils.numberToHex(nonce),
-        gasPrice: web3js.utils.numberToHex(gasPrice),
-        gasLimit: web3js.utils.numberToHex(3500000),
+        nonce: web3.utils.numberToHex(nonce),
+        gasPrice: web3.utils.numberToHex(gasPrice),
+        gasLimit: web3.utils.numberToHex(3500000),
         to: routerContractAddr,
         from: from,
-        value: web3js.utils.numberToHex(0),
+        value: web3.utils.numberToHex(0),
         data: tokenData//转ｔｏｋｅｎ会用到的一个字段
     };
     //需要将交易的数据进行预估ｇａｓ计算，然后将ｇａｓ值设置到数据参数中
@@ -722,7 +722,7 @@ async function removeLiquidityETH(token, liquidity, amountTokenMin, amountETHMin
 
     // console.log(serializedTx.toString('hex'));
     // 0xf889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ca08a8bbf888cfa37bbf0bb965423625641fc956967b81d12e23709cead01446075a01ce999b56a8a88504be365442ea61239198e23d1fce7d00fcfc5cd3b44b7215f
-    let data = await web3js.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
+    let data = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'), function (err, hash) {
         console.log(err);
         console.log('hash:' + hash);
 
@@ -755,14 +755,14 @@ async function getAmountsOut(amountIn, path) {
 
 //pair
 async function getTotalLiquidity(pair) {
-    var pairContract = new web3js.eth.Contract(pairAbi, pair);
+    var pairContract = new web3.eth.Contract(pairAbi, pair);
     // var deadline = new Date().getTime();
     var total = await pairContract.methods.totalSupply().call();
     return total
 }
 
 async function getPersonalLiquidity(pair, owner) {
-    var pairContract = new web3js.eth.Contract(pairAbi, pair);
+    var pairContract = new web3.eth.Contract(pairAbi, pair);
     // var deadline = new Date().getTime();
     var liqiudity = await pairContract.methods.balanceOf(owner).call();
     return liqiudity

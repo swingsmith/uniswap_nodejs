@@ -3,7 +3,7 @@ let Web3 = require("web3");
 function getWeb3(){
 
     let web3Provider;
-    let web3js;
+    let web3;
 
     // if (ethereum) {
     //     web3Provider = ethereum;
@@ -23,9 +23,9 @@ function getWeb3(){
         web3Provider = new Web3.providers.HttpProvider('http://192.168.1.207:8888');
     //     console.log("http://192.168.1.207:8888");
     // }
-    web3js = new Web3(web3Provider);
+    web3 = new Web3(web3Provider);
 
-    return web3js
+    return web3
 }
 
 function getContract(){

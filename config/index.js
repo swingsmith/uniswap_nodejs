@@ -1,11 +1,21 @@
+// 开发环境
+var dev = require('./dev');
 
-let config = null;
+// 测试环境
+var test = require('./test');
 
-if (process.env.Node_ENV === 'production'){
-    config = require('./prod')
-}else{
-    config = require('./dev')
-}
+// 正式环境
+var pro = require('./pro');
+
+var env = process.env.NODE_ENV || 'dev';
+
+console.log('运行环境：' + env)
+var configs = {
+    dev,
+    test,
+    pro,
+};
+
+const config = Object.assign({}, { env }, configs[env])
 
 module.exports = config;
-
